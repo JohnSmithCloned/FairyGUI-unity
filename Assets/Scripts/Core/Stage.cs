@@ -225,7 +225,7 @@ namespace FairyGUI
                     return _touchTarget;
             }
         }
-
+        bool needRefreshFocus;
         /// <summary>
         /// 
         /// </summary>
@@ -239,9 +239,9 @@ namespace FairyGUI
             }
             set
             {
-                if (_focused == value)
+                if (_focused == value && !needRefreshFocus)
                     return;
-
+                needRefreshFocus = false;
                 DisplayObject oldFocus = _focused;
                 _focused = value;
                 if (_focused == this)
