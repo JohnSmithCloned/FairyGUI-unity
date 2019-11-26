@@ -53,7 +53,12 @@ namespace FairyGUI
             {
                 if (value == null)
                     value = string.Empty;
-                _text = value;
+                if (LocalTranslator.Instance.Initialized && value.StartsWith("TXT-"))
+                {
+                    _text = LocalTranslator.Instance.GetString(value.Trim());
+                }
+                else
+                    _text = value;
                 SetTextFieldText();
                 UpdateSize();
                 UpdateGear(6);
@@ -421,6 +426,15 @@ namespace FairyGUI
             string str = buffer.ReadS();
             if (str != null)
                 this.text = str;
+            if (this.data != null)
+            {
+                string txtKey = (string)this.data;
+                if (!string.IsNullOrEmpty(txtKey) && txtKey.StartsWith("TXT-"))
+                {
+                    txtKey = txtKey.Trim();
+                    this.text = txtKey;
+                }
+            }
         }
     }
 }

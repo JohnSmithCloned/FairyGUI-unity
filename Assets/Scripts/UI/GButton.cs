@@ -112,7 +112,12 @@ namespace FairyGUI
             }
             set
             {
-                _title = value;
+                if (LocalTranslator.Instance.Initialized && value.StartsWith("TXT-"))
+                {
+                    _title = LocalTranslator.Instance.GetString(value);
+                }
+                else
+                    _title = value;
                 if (_titleObject != null)
                     _titleObject.text = (_selected && _selectedTitle != null) ? _selectedTitle : _title;
                 UpdateGear(6);
@@ -529,6 +534,16 @@ namespace FairyGUI
                 soundVolumeScale = buffer.ReadFloat();
 
             this.selected = buffer.ReadBool();
+
+            if (this.data != null)
+            {
+                string txtKey = (string)this.data;
+                if (!string.IsNullOrEmpty(txtKey) && txtKey.StartsWith("TXT-"))
+                {
+                    txtKey = txtKey.Trim();
+                    this.title = txtKey;
+                }
+            }
         }
 
         private void __rollover()
