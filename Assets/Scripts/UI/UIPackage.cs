@@ -277,20 +277,35 @@ namespace FairyGUI
         /// </summary>
         /// <param name="descFilePath">Path relative to Unity Resources path.</param>
         /// <returns>UIPackage</returns>
-        public static UIPackage AddPackage(string descFilePath)
+     	public static UIPackage AddPackage(string descFilePath)
         {
+#if UNITY_EDITOR
+            if (!descFilePath.StartsWith("Assets"))
+            {
+                descFilePath = "Assets/BuildOnlyAssets/" + descFilePath;
+            }
+#endif
+
             if (descFilePath.StartsWith("Assets/"))
             {
 #if UNITY_EDITOR
-                return AddPackage(descFilePath, _loadFromAssetsPath);
+                return AddPackage(descFilePath, (string name, string extension, System.Type type, out DestroyMethod destroyMethod) =>
+                {
+                    destroyMethod = DestroyMethod.Unload;
+                    return AssetDatabase.LoadAssetAtPath(name + extension, type);
+                });
 #else
 
-                Debug.LogWarning("FairyGUI: failed to load package in '" + descFilePath + "'");
+                Debugger.LogWarning("FairyGUI: failed to load package in '" + descFilePath + "'");
                 return null;
 #endif
             }
-            else
-                return AddPackage(descFilePath, _loadFromResourcesPath);
+            return AddPackage(descFilePath, (string name, string extension, System.Type type, out DestroyMethod destroyMethod) =>
+            {
+                destroyMethod = DestroyMethod.Unload;
+                UnityEngine.Object obj = Resources.Load(name, type);
+                return obj;
+            });
         }
 
         /// <summary>
