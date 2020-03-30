@@ -83,6 +83,8 @@ namespace FairyGUI
                         this.SetSize(_contentPane.width, _contentPane.height);
                         _contentPane.AddRelation(this, RelationType.Size);
                         _contentPane.fairyBatching = true;
+                        this.SetPosition(0, 0, 0);
+                        _contentPane.MakeFullScreen();
                         _frame = _contentPane.GetChild("frame") as GComponent;
                         if (_frame != null)
                         {
