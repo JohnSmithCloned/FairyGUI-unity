@@ -30,25 +30,25 @@ namespace FairyGUI
             MatchHeight
         }
 
-        /// <summary>
+         /// <summary>
         /// 
         /// </summary>
-        public ScaleMode scaleMode;
+        public ScaleMode scaleMode = ScaleMode.ScaleWithScreenSize;
 
         /// <summary>
         /// 
         /// </summary>
-        public ScreenMatchMode screenMatchMode;
+        public ScreenMatchMode screenMatchMode = ScreenMatchMode.MatchHeight;
 
         /// <summary>
         /// 
         /// </summary>
-        public int designResolutionX;
+        public int designResolutionX = 1125;
 
         /// <summary>
         /// 
         /// </summary>
-        public int designResolutionY;
+        public int designResolutionY = 2436;
 
         /// <summary>
         /// 
