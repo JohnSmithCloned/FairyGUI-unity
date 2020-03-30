@@ -10,6 +10,7 @@ namespace FairyGUI
     /// </summary>
     /// <param name="index">Item index.</param>
     /// <param name="item">Item object.</param>
+    [XLua.CSharpCallLua]
     public delegate void ListItemRenderer(int index, GObject item);
 
     /// <summary>
@@ -17,6 +18,7 @@ namespace FairyGUI
     /// </summary>
     /// <param name="index"></param>
     /// <returns></returns>
+    [XLua.CSharpCallLua]
     public delegate string ListItemProvider(int index);
 
     /// <summary>
