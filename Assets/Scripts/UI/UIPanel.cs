@@ -40,7 +40,7 @@ namespace FairyGUI
         /// <summary>
         /// 
         /// </summary>
-        public FitScreen fitScreen;
+        public FitScreen fitScreen = FitScreen.FitSize;
 
         /// <summary>
         /// 
