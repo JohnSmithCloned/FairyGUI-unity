@@ -356,7 +356,6 @@ namespace FairyGUI
         /// Remove a package. All resources in this package will be disposed.
         /// </summary>
         /// <param name="packageIdOrName"></param>
-        /// <param name="allowDestroyingAssets"></param>
         public static void RemovePackage(string packageIdOrName)
         {
             UIPackage pkg = null;
@@ -1082,24 +1081,14 @@ namespace FairyGUI
 
             GetItemAsset(item);
 
-            GObject g = null;
-            if (item.type == PackageItemType.Component)
-            {
-                if (userClass != null)
-                    g = (GComponent)Activator.CreateInstance(userClass);
-                else
-                    g = UIObjectFactory.NewObject(item);
-            }
-            else
-                g = UIObjectFactory.NewObject(item);
-
+            GObject g = UIObjectFactory.NewObject(item, userClass);
             if (g == null)
                 return null;
 
             _constructing++;
-            g.packageItem = item;
             g.ConstructFromResource();
             _constructing--;
+
             return g;
         }
 
