@@ -52,6 +52,8 @@ namespace FairyGUI
         {
             cachedTransform = this.transform;
             cachedCamera = this.GetComponent<Camera>();
+            cachedCamera.clearFlags = CameraClearFlags.Depth;
+            cachedCamera.backgroundColor = new Color(79f / 255, 60f / 255, 60f / 255, 139f / 255);
             if (this.gameObject.name == Name)
             {
                 main = cachedCamera;
