@@ -323,9 +323,9 @@ namespace FairyGUI
             TextAsset asset = (TextAsset)loadFunc(assetPath + "_fui", ".bytes", typeof(TextAsset), out dm);
             if (asset == null)
             {
-                if (Application.isPlaying)
-                    throw new Exception("FairyGUI: Cannot load ui package in '" + assetPath + "'");
-                else
+                // if (Application.isPlaying)
+                //     throw new Exception("FairyGUI: Cannot load ui package in '" + assetPath + "'");
+                // else
                     Debug.LogWarning("FairyGUI: Cannot load ui package in '" + assetPath + "'");
             }
 
