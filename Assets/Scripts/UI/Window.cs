@@ -486,6 +486,11 @@ namespace FairyGUI
             CloseModalWait();
             OnHide();
         }
+        public void restartGame()
+        {
+            _loading = false;
+            _inited = false;
+        }
 
         private void __touchBegin(EventContext context)
         {
