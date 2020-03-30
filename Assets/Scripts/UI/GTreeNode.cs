@@ -187,6 +187,8 @@ namespace FairyGUI
                     child.parent = this;
                     child._level = _level + 1;
                     child._SetTree(this.tree);
+                    if (tree != null)
+                        tree.CreatetreeThing(child);
                     if (tree != null && this == tree.rootNode || _cell != null && _cell.parent != null && _expanded)
                         tree._AfterInserted(child);
                 }
