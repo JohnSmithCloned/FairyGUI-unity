@@ -1,5 +1,5 @@
-using System;
 #if FAIRYGUI_TOLUA
+using System;
 using LuaInterface;
 #endif
 

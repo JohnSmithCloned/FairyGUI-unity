@@ -202,13 +202,12 @@ namespace FairyGUI
         /// </summary>
         /// <param name="desc">A assetbunble contains description file.</param>
         /// <param name="res">A assetbundle contains resources.</param>
-        /// <param name="mainAssetName">Main asset name. e.g. Basics_fui.bytes</param>
+        /// <param name="mainAssetName">Main asset name. e.g. Basics_fui</param>
         /// <returns>UIPackage</returns>
         public static UIPackage AddPackage(AssetBundle desc, AssetBundle res, string mainAssetName)
         {
             byte[] source = null;
-#if (UNITY_5 || UNITY_5_3_OR_NEWER)
-            if (mainAssetName != null)
+            if (!string.IsNullOrEmpty(mainAssetName))
             {
                 TextAsset ta = desc.LoadAsset<TextAsset>(mainAssetName);
                 if (ta != null)
@@ -232,19 +231,7 @@ namespace FairyGUI
                     }
                 }
             }
-#else
-            if (mainAssetName != null)
-            {
-                TextAsset ta = (TextAsset)desc.Load(mainAssetName, typeof(TextAsset));
-                if (ta != null)
-                    source = ta.bytes;
-            }
-            else
-            {
-                source = ((TextAsset)desc.mainAsset).bytes;
-                mainAssetName = desc.mainAsset.name;
-            }
-#endif
+
             if (source == null)
                 throw new Exception("FairyGUI: no package found in this bundle.");
 
@@ -257,12 +244,9 @@ namespace FairyGUI
             pkg._resBundle = res;
             pkg._fromBundle = true;
             int pos = mainAssetName.IndexOf("_fui");
-            string assetNamePrefix;
             if (pos != -1)
-                assetNamePrefix = mainAssetName.Substring(0, pos);
-            else
-                assetNamePrefix = mainAssetName;
-            if (!pkg.LoadPackage(buffer, res.name, assetNamePrefix))
+                mainAssetName = mainAssetName.Substring(0, pos);
+            if (!pkg.LoadPackage(buffer, mainAssetName))
                 return null;
 
             _packageInstById[pkg.id] = pkg;
@@ -334,7 +318,7 @@ namespace FairyGUI
             UIPackage pkg = new UIPackage();
             pkg._loadFunc = loadFunc;
             pkg._assetPath = assetPath;
-            if (!pkg.LoadPackage(buffer, assetPath, assetPath))
+            if (!pkg.LoadPackage(buffer, assetPath))
                 return null;
 
             _packageInstById[pkg.id] = pkg;
@@ -348,7 +332,7 @@ namespace FairyGUI
         /// 使用自定义的加载方式载入一个包。
         /// </summary>
         /// <param name="descData">描述文件数据。</param>
-        /// <param name="assetNamePrefix">资源文件名前缀。如果包含，则载入资源时名称将传入assetNamePrefix@resFileName这样格式。可以为空。</param>
+        /// <param name="assetNamePrefix">资源文件名前缀。如果包含，则载入资源时名称将传入assetNamePrefix_resFileName这样格式。可以为空。</param>
         /// <param name="loadFunc">载入函数</param>
         /// <returns></returns>
         public static UIPackage AddPackage(byte[] descData, string assetNamePrefix, LoadResource loadFunc)
@@ -357,7 +341,7 @@ namespace FairyGUI
 
             UIPackage pkg = new UIPackage();
             pkg._loadFunc = loadFunc;
-            if (!pkg.LoadPackage(buffer, "raw data", assetNamePrefix))
+            if (!pkg.LoadPackage(buffer, assetNamePrefix))
                 return null;
 
             _packageInstById[pkg.id] = pkg;
@@ -655,15 +639,15 @@ namespace FairyGUI
             get { return _dependencies; }
         }
 
-        bool LoadPackage(ByteBuffer buffer, string packageSource, string assetNamePrefix)
+        bool LoadPackage(ByteBuffer buffer, string assetNamePrefix)
         {
             if (buffer.ReadUint() != 0x46475549)
             {
                 if (Application.isPlaying)
-                    throw new Exception("FairyGUI: old package format found in '" + packageSource + "'");
+                    throw new Exception("FairyGUI: old package format found in '" + assetNamePrefix + "'");
                 else
                 {
-                    Debug.LogWarning("FairyGUI: old package format found in '" + packageSource + "'");
+                    Debug.LogWarning("FairyGUI: old package format found in '" + assetNamePrefix + "'");
                     return false;
                 }
             }
@@ -747,11 +731,16 @@ namespace FairyGUI
             buffer.Seek(indexTablePos, 1);
 
             PackageItem pi;
-
-            if (assetNamePrefix == null)
-                assetNamePrefix = string.Empty;
-            else if (assetNamePrefix.Length > 0)
+            string assetPath;
+            if (assetNamePrefix.Length > 0)
+            {
+                assetPath = Path.GetDirectoryName(assetNamePrefix);
+                if (assetPath.Length > 0)
+                    assetPath += "/";
                 assetNamePrefix = assetNamePrefix + "_";
+            }
+            else
+                assetPath = string.Empty;
 
             cnt = buffer.ReadShort();
             for (int i = 0; i < cnt; i++)
@@ -826,6 +815,15 @@ namespace FairyGUI
                     case PackageItemType.Misc:
                         {
                             pi.file = assetNamePrefix + pi.file;
+                            break;
+                        }
+
+                    case PackageItemType.Spine:
+                    case PackageItemType.DragoneBones:
+                        {
+                            pi.file = assetPath + pi.file;
+                            pi.skeletonAnchor.x = buffer.ReadFloat();
+                            pi.skeletonAnchor.y = buffer.ReadFloat();
                             break;
                         }
                 }
@@ -1185,6 +1183,16 @@ namespace FairyGUI
                 case PackageItemType.Misc:
                     return LoadBinary(item);
 
+                case PackageItemType.Spine:
+                    if (item.skeletonAsset == null)
+                        LoadSpine(item);
+                    return item.skeletonAsset;
+
+                case PackageItemType.DragoneBones:
+                    if (item.skeletonAsset == null)
+                        LoadDragonBones(item);
+                    return item.skeletonAsset;
+
                 default:
                     return null;
             }
@@ -1202,13 +1210,7 @@ namespace FairyGUI
             if (_fromBundle)
             {
                 if (_resBundle != null)
-                {
-#if (UNITY_5 || UNITY_5_3_OR_NEWER)
                     tex = _resBundle.LoadAsset<Texture>(fileName);
-#else
-                    tex = (Texture2D)_resBundle.Load(fileName, typeof(Texture2D));
-#endif
-                }
                 else
                     Debug.LogWarning("FairyGUI: bundle already unloaded.");
 
@@ -1236,13 +1238,7 @@ namespace FairyGUI
                 if (_fromBundle)
                 {
                     if (_resBundle != null)
-                    {
-#if (UNITY_5 || UNITY_5_3_OR_NEWER)
                         alphaTex = _resBundle.LoadAsset<Texture2D>(fileName);
-#else
-                        alphaTex = (Texture2D)_resBundle.Load(fileName, typeof(Texture2D));
-#endif
-                    }
                 }
                 else
                     alphaTex = (Texture2D)_loadFunc(fileName, ext, typeof(Texture2D), out dm);
@@ -1271,7 +1267,13 @@ namespace FairyGUI
         {
             AtlasSprite sprite;
             if (_sprites.TryGetValue(item.id, out sprite))
-                item.texture = new NTexture((NTexture)GetItemAsset(sprite.atlas), sprite.rect, sprite.rotated, sprite.originalSize, sprite.offset);
+            {
+                NTexture atlas = (NTexture)GetItemAsset(sprite.atlas);
+                if (atlas.width == sprite.rect.width && atlas.height == sprite.rect.height)
+                    item.texture = atlas;
+                else
+                    item.texture = new NTexture(atlas, sprite.rect, sprite.rotated, sprite.originalSize, sprite.offset);
+            }
             else
                 item.texture = NTexture.Empty;
         }
@@ -1286,11 +1288,7 @@ namespace FairyGUI
 
             if (_resBundle != null)
             {
-#if (UNITY_5 || UNITY_5_3_OR_NEWER)
                 audioClip = _resBundle.LoadAsset<AudioClip>(fileName);
-#else
-                audioClip = (AudioClip)_resBundle.Load(fileName, typeof(AudioClip));
-#endif
                 dm = DestroyMethod.None;
             }
             else
@@ -1313,11 +1311,7 @@ namespace FairyGUI
             TextAsset ta;
             if (_resBundle != null)
             {
-#if (UNITY_5 || UNITY_5_3_OR_NEWER)
                 ta = _resBundle.LoadAsset<TextAsset>(fileName);
-#else
-                ta = (TextAsset)_resBundle.Load(fileName, typeof(TextAsset));
-#endif
                 if (ta != null)
                     return ta.bytes;
                 else
@@ -1382,7 +1376,8 @@ namespace FairyGUI
 
         void LoadFont(PackageItem item)
         {
-            BitmapFont font = new BitmapFont(item);
+            BitmapFont font = new BitmapFont();
+            font.name = URL_PREFIX + this.id + item.id;
             item.bitmapFont = font;
             ByteBuffer buffer = item.rawData;
 
@@ -1434,12 +1429,12 @@ namespace FairyGUI
                 bgHeight = buffer.ReadInt();
                 bg.advance = buffer.ReadInt();
                 bg.channel = buffer.ReadByte();
-                //The texture channel where the character image is found (1 = blue, 2 = green, 4 = red, 8 = alpha).
+                //The texture channel where the character image is found (1 = blue, 2 = green, 4 = red, 8 = alpha, 15-all).
                 if (bg.channel == 1)
                     bg.channel = 2;
                 else if (bg.channel == 2)
                     bg.channel = 1;
-                else if (bg.channel == 3)
+                else if (bg.channel == 4)
                     bg.channel = 0;
                 else if (bg.channel == 8)
                     bg.channel = 3;
@@ -1466,8 +1461,8 @@ namespace FairyGUI
                     bg.lineHeight = lineHeight;
                     bg.x = bgX;
                     bg.y = bgY;
-                    bg.xMax = bg.x + bgWidth;
-                    bg.yMax = bg.y + bgHeight;
+                    bg.width = bgWidth;
+                    bg.height = bgHeight;
                 }
                 else
                 {
@@ -1486,8 +1481,8 @@ namespace FairyGUI
 
                         bg.x = bgX + charImg.texture.offset.x * texScaleX;
                         bg.y = bgY + charImg.texture.offset.y * texScaleY;
-                        bg.xMax = bg.x + charImg.texture.width * texScaleX;
-                        bg.yMax = bg.y + charImg.texture.height * texScaleY;
+                        bg.width = charImg.texture.width * texScaleX;
+                        bg.height = charImg.texture.height * texScaleY;
 
                         if (mainTexture == null)
                             mainTexture = charImg.texture.root;
@@ -1516,6 +1511,70 @@ namespace FairyGUI
             font.mainTexture = mainTexture;
             if (!font.hasChannel)
                 font.shader = ShaderConfig.imageShader;
+        }
+
+        void LoadSpine(PackageItem item)
+        {
+#if FAIRYGUI_SPINE
+            string ext = Path.GetExtension(item.file);
+            string fileName = item.file.Substring(0, item.file.Length - ext.Length);
+            int index = fileName.LastIndexOf(".skel");
+            if (index > 0)
+                fileName = fileName.Substring(0, index);
+
+            Spine.Unity.SkeletonDataAsset asset;
+            if (_resBundle != null)
+                asset = _resBundle.LoadAsset<Spine.Unity.SkeletonDataAsset>(fileName);
+            else
+            {
+                DestroyMethod dm;
+                asset = (Spine.Unity.SkeletonDataAsset)_loadFunc(fileName + "_SkeletonData", ".asset", typeof(Spine.Unity.SkeletonDataAsset), out dm);
+            }
+            if (asset == null)
+                Debug.LogWarning("FairyGUI: Failed to load " + fileName);
+            item.skeletonAsset = asset;
+#else
+            Debug.LogWarning("To enable Spine support, add script define symbol: FAIRYGUI_SPINE");
+#endif
+        }
+
+        void LoadDragonBones(PackageItem item)
+        {
+#if FAIRYGUI_DRAGONBONES
+            string ext = Path.GetExtension(item.file);
+            string fileName = item.file.Substring(0, item.file.Length - ext.Length);
+            int index = fileName.LastIndexOf("_ske");
+            if (index > 0)
+                fileName = fileName.Substring(0, index);
+            index = fileName.LastIndexOf(".dbbin");
+            if (index > 0)
+                fileName = fileName.Substring(0, index);
+
+            DragonBones.UnityDragonBonesData asset;
+            if (_resBundle != null)
+                asset = _resBundle.LoadAsset<DragonBones.UnityDragonBonesData>(fileName);
+            else
+            {
+                DestroyMethod dm;
+                asset = (DragonBones.UnityDragonBonesData)_loadFunc(fileName + "_Data", ".asset", typeof(DragonBones.UnityDragonBonesData), out dm);
+            }
+            if (asset != null)
+            {
+                foreach (var atlas in asset.textureAtlas)
+                {
+                    if (atlas.material == null)
+                    {
+                        atlas.material = new Material(ShaderConfig.GetShader(ShaderConfig.imageShader));
+                        atlas.material.mainTexture = atlas.texture;
+                    }
+                }
+                item.skeletonAsset = DragonBones.UnityFactory.factory.LoadData(asset);
+            }
+            else
+                Debug.LogWarning("FairyGUI: Failed to load " + fileName);
+#else
+            Debug.LogWarning("To enable DragonBones support, add script define symbol: FAIRYGUI_DRAGONBONES");
+#endif
         }
     }
 }
