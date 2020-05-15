@@ -255,7 +255,12 @@ namespace FairyGUI
         public bool editable
         {
             get { return _editable; }
-            set { _editable = value; }
+            set
+            {
+                _editable = value;
+                if (_caret != null)
+                    _caret.visible = _editable;
+            }
         }
 
         /// <summary>
@@ -536,27 +541,27 @@ namespace FairyGUI
 
         void UpdateText()
         {
-            int composing = _composing;
-            _composing = 0;
-
             if (!_editing && _text.Length == 0 && !string.IsNullOrEmpty(_decodedPromptText))
+            {
                 textField.htmlText = _decodedPromptText;
-            else if (_displayAsPassword)
+                return;
+            }
+
+            if (_displayAsPassword)
                 textField.text = EncodePasswordText(_text);
-            else if (Input.compositionString.Length > 0)
+            else
+                textField.text = _text;
+
+            _composing = Input.compositionString.Length;
+            if (_composing > 0)
             {
                 StringBuilder buffer = new StringBuilder();
                 GetPartialText(0, _caretPosition, buffer);
                 buffer.Append(Input.compositionString);
-                GetPartialText(_caretPosition + composing, -1, buffer);
+                GetPartialText(_caretPosition, -1, buffer);
 
-                _composing = Input.compositionString.Length;
-
-                string newText = buffer.ToString();
-                textField.text = newText;
+                textField.text = buffer.ToString();
             }
-            else
-                textField.text = _text;
         }
 
         string EncodePasswordText(string value)
@@ -657,20 +662,23 @@ namespace FairyGUI
                 _caret.position = textField.xy + pos;
                 _caret.height = line.height > 0 ? line.height : textField.textFormat.size;
 
-                Vector2 cursorPos = _caret.LocalToWorld(new Vector2(0, _caret.height));
-                cursorPos = StageCamera.main.WorldToScreenPoint(cursorPos);
-#if !UNITY_2019_OR_NEWER
-                if (Stage.devicePixelRatio == 1)
+                if (_editable)
                 {
-#endif
-                    cursorPos.y = Screen.height - cursorPos.y;
-                    cursorPos = cursorPos / Stage.devicePixelRatio;
-                    Input.compositionCursorPos = cursorPos + new Vector2(0, 20);
+                    Vector2 cursorPos = _caret.LocalToWorld(new Vector2(0, _caret.height));
+                    cursorPos = StageCamera.main.WorldToScreenPoint(cursorPos);
 #if !UNITY_2019_OR_NEWER
-                }
-                else
-                    Input.compositionCursorPos = cursorPos - new Vector2(0, 20);
+                    if (Stage.devicePixelRatio == 1)
+                    {
 #endif
+                        cursorPos.y = Screen.height - cursorPos.y;
+                        cursorPos = cursorPos / Stage.devicePixelRatio;
+                        Input.compositionCursorPos = cursorPos + new Vector2(0, 20);
+#if !UNITY_2019_OR_NEWER
+                    }
+                    else
+                        Input.compositionCursorPos = cursorPos - new Vector2(0, 20);
+#endif
+                }
 
                 _nextBlink = Time.time + 0.5f;
                 _caret.graphics.enabled = true;
@@ -1039,6 +1047,7 @@ namespace FairyGUI
                 caretSize = UIConfig.inputCaretSize;
             _caret.SetSize(caretSize, textField.textFormat.size);
             _caret.DrawRect(0, Color.clear, textField.textFormat.color);
+            _caret.visible = _editable;
             AddChild(_caret);
 
             _selectionShape.Clear();
@@ -1062,7 +1071,7 @@ namespace FairyGUI
             }
             else
             {
-                if (!disableIME)
+                if (!disableIME && !_displayAsPassword)
                     Input.imeCompositionMode = IMECompositionMode.On;
                 else
                     Input.imeCompositionMode = IMECompositionMode.Off;
@@ -1390,7 +1399,17 @@ namespace FairyGUI
             else
             {
                 if (Input.compositionString.Length > 0 && _editable)
-                    UpdateText();
+                {
+                    int composing = _composing;
+                    _composing = Input.compositionString.Length;
+
+                    StringBuilder buffer = new StringBuilder();
+                    GetPartialText(0, _caretPosition, buffer);
+                    buffer.Append(Input.compositionString);
+                    GetPartialText(_caretPosition + composing, -1, buffer);
+
+                    textField.text = buffer.ToString();
+                }
 
                 return keyCodeHandled;
             }
