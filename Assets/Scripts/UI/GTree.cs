@@ -229,11 +229,6 @@ namespace FairyGUI
             if (treeNodeRender != null)
                 treeNodeRender(node, node._cell);
         }
-        
-        internal void CreatetreeThing(GTreeNode node) {
-            if (node._cell == null)
-                CreateCell(node);
-        }
 
         /// <summary>
         /// 
