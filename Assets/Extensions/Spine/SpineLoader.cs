@@ -35,9 +35,13 @@ namespace FairyGUI
             _spineAnimation = SkeletonRenderer.NewSpineGameObject<SkeletonAnimation>(asset);
             _spineAnimation.gameObject.name = asset.name;
             Spine.SkeletonData dat = asset.GetSkeletonData(false);
-            _spineAnimation.gameObject.transform.localScale = new Vector3(100, 100, 1);
+            _spineAnimation.gameObject.transform.localScale = new Vector3(1 / asset.scale, 1 / asset.scale, 1);
             _spineAnimation.gameObject.transform.localPosition = new Vector3(anchor.x, -anchor.y, 0);
             SetWrapTarget(_spineAnimation.gameObject, true, width, height);
+
+            _spineAnimation.skeleton.R = _color.r;
+            _spineAnimation.skeleton.G = _color.g;
+            _spineAnimation.skeleton.B = _color.b;
 
             OnChangeSpine(null);
         }
@@ -55,6 +59,14 @@ namespace FairyGUI
         {
             if (_spineAnimation == null)
                 return;
+
+            if (propertyName == "color")
+            {
+                _spineAnimation.skeleton.R = _color.r;
+                _spineAnimation.skeleton.G = _color.g;
+                _spineAnimation.skeleton.B = _color.b;
+                return;
+            }
 
             var skeletonData = _spineAnimation.skeleton.Data;
 
@@ -98,6 +110,12 @@ namespace FairyGUI
                 else
                     GameObject.DestroyImmediate(_spineAnimation.gameObject);
             }
+        }
+
+        protected void OnUpdateSpine(UpdateContext context)
+        {
+            if (_spineAnimation != null)
+                _spineAnimation.skeleton.A = context.alpha * _content.alpha;
         }
     }
 }
