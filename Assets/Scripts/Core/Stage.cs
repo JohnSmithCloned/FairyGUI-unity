@@ -36,6 +36,7 @@ namespace FairyGUI
         List<DisplayObject> _rollOutChain;
         List<DisplayObject> _rollOverChain;
         TouchInfo[] _touches;
+        int _touchMoreCount = 1;
         int _touchCount;
         Vector2 _touchPosition;
         int _frameGotHitTarget;
@@ -514,7 +515,11 @@ namespace FairyGUI
         {
             get { return _touchCount; }
         }
-
+        public int touchMoreCount
+        {
+            get { return _touchMoreCount; }
+            set { _touchMoreCount = value; }
+        }
         public int[] GetAllTouch(int[] result)
         {
             if (result == null)
@@ -1119,6 +1124,10 @@ namespace FairyGUI
                 {
                     if (!touch.began)
                     {
+                        if (_touchCount >= _touchMoreCount)
+                        {
+                            break;
+                        }
                         _touchCount++;
                         touch.Begin();
                         touch.button = 0;
