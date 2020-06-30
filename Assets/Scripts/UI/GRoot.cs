@@ -32,6 +32,7 @@ namespace FairyGUI
         HashSet<GObject> _specialPopups;
         GObject _tooltipWin;
         GObject _defaultTooltipWin;
+        public bool isNeedChangePosition = false;
 
         internal static GRoot _inst;
         public static GRoot inst
@@ -44,7 +45,15 @@ namespace FairyGUI
                 return _inst;
             }
         }
-
+        public void ChangeScreenHeight(float downData)
+        {
+            isNeedChangePosition = true;
+            float percent = (100 - downData) / 100;
+            float heightNow = Screen.height * percent;
+            this.displayObject.gameObject.transform.localPosition = new Vector3(0, -Mathf.Abs(Screen.height - heightNow), 0);
+            float lastY = this.displayObject.gameObject.transform.localScale.y * percent;
+            this.displayObject.gameObject.transform.localScale = new Vector3(this.displayObject.gameObject.transform.localScale.x, lastY, this.displayObject.gameObject.transform.localScale.z);
+        }
         public GRoot()
         {
             this.name = this.rootContainer.name = this.rootContainer.gameObject.name = "GRoot";
