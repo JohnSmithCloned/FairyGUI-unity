@@ -51,7 +51,12 @@ namespace FairyGUI
             set
             {
                 if (_titleObject != null)
-                    _titleObject.text = value;
+                {
+                    if (LocalTranslator.Instance.Initialized && value.StartsWith("TXT-"))
+                        _titleObject.text = LocalTranslator.Instance.GetString(value);
+                    else
+                        _titleObject.text = value;
+                }
                 UpdateGear(6);
             }
         }
@@ -212,6 +217,16 @@ namespace FairyGUI
                 }
                 else
                     buffer.Skip(13);
+            }
+
+            if (this.data != null)
+            {
+                string txtKey = (string)this.data;
+                if (!string.IsNullOrEmpty(txtKey) && txtKey.StartsWith("TXT-"))
+                {
+                    txtKey = txtKey.Trim();
+                    this.title = txtKey;
+                }
             }
         }
     }
