@@ -1126,7 +1126,7 @@ namespace FairyGUI
                     {
                         if (_touchCount >= _touchMoreCount)
                         {
-                            break;
+                            continue;
                         }
                         _touchCount++;
                         touch.Begin();
