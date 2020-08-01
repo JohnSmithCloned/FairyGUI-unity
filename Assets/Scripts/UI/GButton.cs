@@ -640,9 +640,18 @@ namespace FairyGUI
             if (_over)
                 __rollout();
         }
-
+        public bool isCanClickquick = false;  //是否允许可以双击
+        private float ClickTime = 0;     //上次点击的时间
         private void __click()
         {
+            if (isCanClickquick == false) 
+            {
+                if (Time.unscaledTime - ClickTime > 0.35f)
+                    ClickTime = Time.unscaledTime;
+                else
+                    return;
+            }
+
             if (sound != null && sound.nativeClip != null)
                 Stage.inst.PlayOneShotSound(sound.nativeClip, soundVolumeScale);
 
