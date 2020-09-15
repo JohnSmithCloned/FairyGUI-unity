@@ -45,15 +45,8 @@ namespace FairyGUI
                 return _inst;
             }
         }
-        public void ChangeScreenHeight(float downData)
-        {
-            isNeedChangePosition = true;
-            float percent = (100 - downData) / 100;
-            float heightNow = Screen.height * percent;
-            this.displayObject.gameObject.transform.localPosition = new Vector3(0, -Mathf.Abs(Screen.height - heightNow), 0);
-            float lastY = this.displayObject.gameObject.transform.localScale.y * percent;
-            this.displayObject.gameObject.transform.localScale = new Vector3(this.displayObject.gameObject.transform.localScale.x, lastY, this.displayObject.gameObject.transform.localScale.z);
-        }
+
+
         public GRoot()
         {
             this.name = this.rootContainer.name = this.rootContainer.gameObject.name = "GRoot";
@@ -851,6 +844,35 @@ namespace FairyGUI
         {
             get { return Stage.inst.soundVolume; }
             set { Stage.inst.soundVolume = value; }
+        }
+
+        float pos_x = 0;
+        float pos_y = 0;
+        float pos_z = 0;
+        public void ChangeScreenHeight(float downData)
+        {
+            isNeedChangePosition = true;
+            float percent = (1 - downData);
+            float lastY = pos_y * percent;
+            float heightNow = lastY / (pos_y / Screen.height);
+            this.displayObject.gameObject.transform.localPosition = new Vector3(0, -Mathf.Abs(Screen.height - heightNow), 0);
+       
+            this.displayObject.gameObject.transform.localScale = new Vector3(pos_x, lastY, pos_z);
+        }
+
+        public void ReturnToMainPage()
+        {
+            if (pos_x == 0)
+            {
+                 pos_x = this.displayObject.gameObject.transform.localScale.x;
+                 pos_y = this.displayObject.gameObject.transform.localScale.y;
+                 pos_z = this.displayObject.gameObject.transform.localScale.z;
+            }
+            else {
+                Debug.LogError("有进来开始屏幕压缩了kaishi :" + this.height);
+                this.displayObject.gameObject.transform.localPosition = new Vector3(0, -Mathf.Abs(this.height), 0);
+                this.displayObject.gameObject.transform.localScale = new Vector3(1, 1, 1);
+            }
         }
     }
 }
