@@ -660,7 +660,23 @@ namespace FairyGUI
                 return Mathf.Clamp(-_container.y, 0, _overlapSize.y);
             }
         }
+        //获取这个内容的实时位置
+        public float containerY
+        {
+            get
+            {
+                return -_container.y;
+            }
+        }
 
+        //获取这个内容的实时位置
+        public float containerX
+        {
+            get
+            {
+                return -_container.x;
+            }
+        }
         /// <summary>
         /// 显示内容宽度。
         /// </summary>
