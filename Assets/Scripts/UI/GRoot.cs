@@ -505,7 +505,7 @@ namespace FairyGUI
                     xx += size.x / 2;
                 }
             }
-
+            if (xx < 0) xx = 0;
             return new Vector2(Mathf.RoundToInt(xx), Mathf.RoundToInt(yy));
         }
 

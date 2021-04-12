@@ -49,12 +49,19 @@ namespace FairyGUI
             if (_keyboard != null)
                 return;
 
+            EventManager.TriggerEvent(EventDefine.KEYBOARDOPEN);
+            string textGet = LuaGameStarter.Instance.CallLuaFunction<string>("ChatEmojiOrEquip", "OpenJianpanData");
+            if (textGet != "")
+            {
+                text = textGet;
+            }
             UnityEngine.TouchScreenKeyboard.hideInput = hideInput;
             _keyboard = UnityEngine.TouchScreenKeyboard.Open(text, (TouchScreenKeyboardType)keyboardType, autocorrection, multiline, secure, alert, textPlaceholder);
         }
 
         public void Close()
         {
+            EventManager.TriggerEvent(EventDefine.KEYBOARCLOSE);
             if (_keyboard != null)
             {
                 _keyboard.active = false;

@@ -363,7 +363,8 @@ namespace FairyGUI
         /// <param name="value"></param>
         internal void _SetStencilEraserOrder(int value)
         {
-            _stencilEraser.meshRenderer.sortingOrder = value;
+            if(_stencilEraser != null && _stencilEraser.meshRenderer != null)
+                _stencilEraser.meshRenderer.sortingOrder = value;
         }
 
         /// <summary>

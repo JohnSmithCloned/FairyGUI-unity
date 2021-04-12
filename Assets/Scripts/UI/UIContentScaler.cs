@@ -37,17 +37,17 @@ namespace FairyGUI
         /// <summary>
         /// 
         /// </summary>
-        public ScreenMatchMode screenMatchMode = ScreenMatchMode.MatchHeight;
+        public ScreenMatchMode screenMatchMode = ScreenMatchMode.MatchWidthOrHeight;
 
         /// <summary>
         /// 
         /// </summary>
-        public int designResolutionX = 1125;
+        public int designResolutionX = 750;
 
         /// <summary>
         /// 
         /// </summary>
-        public int designResolutionY = 2436;
+        public int designResolutionY = 1334;
 
         /// <summary>
         /// 
