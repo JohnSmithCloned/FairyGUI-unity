@@ -1093,7 +1093,8 @@ namespace FairyGUI
                 Debug.LogError("FairyGUI: resource not found - " + resName + " in " + this.name);
                 return null;
             }
-
+            ResRecorder.RecordFairyObjectNew(resName);
+            
             return CreateObject(pi, null);
         }
 

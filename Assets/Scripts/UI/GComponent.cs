@@ -92,6 +92,10 @@ namespace FairyGUI
                 obj.InternalSetParent(null); //Avoid GObject.RemoveParent call
                 obj.Dispose();
             }
+            if(this.packageItem != null)
+            {
+                ResRecorder.RecordFairyObjectRel(this.packageItem.name);
+            }
 
 #if FAIRYGUI_TOLUA
             if (_peerTable != null)
