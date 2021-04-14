@@ -553,9 +553,15 @@ namespace FairyGUI
             float sx = 1, sy = 1;
             if (_fill != FillType.None)
             {
-                sx = this.width / sourceWidth;
-                sy = this.height / sourceHeight;
-
+                if (sourceWidth != 0)
+                {
+                    sx = this.width / sourceWidth;
+                }
+                
+                if (sourceHeight != 0)
+                {
+                    sy = this.height / sourceHeight;
+                }
                 if (sx != 1 || sy != 1)
                 {
                     if (_fill == FillType.ScaleMatchHeight)

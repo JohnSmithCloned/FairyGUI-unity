@@ -201,6 +201,7 @@ namespace FairyGUI
                 if (_modalWaitPane == null || _modalWaitPane.isDisposed)
                 {
                     _modalWaitPane = UIPackage.CreateObjectFromURL(UIConfig.globalModalWaiting);
+                    if (_modalWaitPane == null) return;
                     _modalWaitPane.SetHome(this);
                 }
                 _modalWaitPane.SetSize(this.width, this.height);
