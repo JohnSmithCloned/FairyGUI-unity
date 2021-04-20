@@ -667,6 +667,7 @@ namespace FairyGUI
             {
                 return -_container.y;
             }
+            set { _container.y = value; }
         }
 
         //获取这个内容的实时位置
