@@ -545,6 +545,13 @@ namespace FairyGUI
             {
                 dropdown.displayObject.onRemovedFromStage.Add(__popupWinClosed);
                 SetState(GButton.DOWN);
+                //下拉框变大效果
+                float saveHeight = dropdown.height;
+                dropdown.height = 0;
+                dropdown.TweenResize(new Vector2(dropdown.width, saveHeight), 0.3f);
+                float saveListHeight = _list.height;
+                _list.height = 0;
+                _list.TweenResize(new Vector2(_list.width, saveListHeight), 0.3f);
             }
         }
 
