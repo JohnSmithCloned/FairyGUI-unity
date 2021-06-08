@@ -27,11 +27,6 @@ namespace FairyGUI
     public class GList : GComponent
     {
         /// <summary>
-        /// Resource url of the default item.
-        /// </summary>
-        public string defaultItem;
-
-        /// <summary>
         /// 如果true，当item不可见时自动折叠，否则依然占位
         /// </summary>
         public bool foldInvisibleItems = false;
@@ -57,6 +52,7 @@ namespace FairyGUI
         /// </summary>
         public bool scrollItemToViewOnClick;
 
+        string _defaultItem;
         ListLayoutType _layout;
         int _lineCount;
         int _columnCount;
@@ -142,6 +138,18 @@ namespace FairyGUI
         public EventListener onRightClickItem
         {
             get { return _onRightClickItem ?? (_onRightClickItem = new EventListener(this, "onRightClickItem")); }
+        }
+
+        /// <summary>
+        /// Resource url of the default item.
+        /// </summary>
+        public string defaultItem
+        {
+            get { return _defaultItem; }
+            set
+            {
+                _defaultItem = UIPackage.NormalizeURL(value);
+            }
         }
 
         /// <summary>
@@ -330,7 +338,7 @@ namespace FairyGUI
         public GObject GetFromPool(string url)
         {
             if (string.IsNullOrEmpty(url))
-                url = defaultItem;
+                url = _defaultItem;
 
             GObject ret = _pool.GetObject(url);
             if (ret != null)
@@ -1936,7 +1944,7 @@ namespace FairyGUI
             bool needRender;
             float deltaSize = 0;
             float firstItemDeltaSize = 0;
-            string url = defaultItem;
+            string url = _defaultItem;
             int partSize = (int)((scrollPane.viewWidth - _columnGap * (_curLineItemCount - 1)) / _curLineItemCount);
 
             itemInfoVer++;
@@ -1950,7 +1958,7 @@ namespace FairyGUI
                     {
                         url = itemProvider(curIndex % _numItems);
                         if (url == null)
-                            url = defaultItem;
+                            url = _defaultItem;
                         url = UIPackage.NormalizeURL(url);
                     }
 
@@ -2106,7 +2114,7 @@ namespace FairyGUI
             bool needRender;
             float deltaSize = 0;
             float firstItemDeltaSize = 0;
-            string url = defaultItem;
+            string url = _defaultItem;
             int partSize = (int)((scrollPane.viewHeight - _lineGap * (_curLineItemCount - 1)) / _curLineItemCount);
 
             itemInfoVer++;
@@ -2120,7 +2128,7 @@ namespace FairyGUI
                     {
                         url = itemProvider(curIndex % _numItems);
                         if (url == null)
-                            url = defaultItem;
+                            url = _defaultItem;
                         url = UIPackage.NormalizeURL(url);
                     }
 
@@ -2276,7 +2284,7 @@ namespace FairyGUI
             int startIndex = page * pageSize;
             int lastIndex = startIndex + pageSize * 2; //测试两页
             bool needRender;
-            string url = defaultItem;
+            string url = _defaultItem;
             int partWidth = (int)((scrollPane.viewWidth - _columnGap * (_curLineItemCount - 1)) / _curLineItemCount);
             int partHeight = (int)((scrollPane.viewHeight - _lineGap * (_curLineItemCount2 - 1)) / _curLineItemCount2);
             itemInfoVer++;
@@ -2340,7 +2348,7 @@ namespace FairyGUI
                         {
                             url = itemProvider(i % _numItems);
                             if (url == null)
-                                url = defaultItem;
+                                url = _defaultItem;
                             url = UIPackage.NormalizeURL(url);
                         }
 
@@ -2966,7 +2974,7 @@ namespace FairyGUI
 
             buffer.Seek(beginPos, 8);
 
-            defaultItem = buffer.ReadS();
+            _defaultItem = buffer.ReadS();
             ReadItems(buffer);
         }
 
@@ -2981,7 +2989,7 @@ namespace FairyGUI
                 string str = buffer.ReadS();
                 if (str == null)
                 {
-                    str = defaultItem;
+                    str = _defaultItem;
                     if (string.IsNullOrEmpty(str))
                     {
                         buffer.position = nextPos;
