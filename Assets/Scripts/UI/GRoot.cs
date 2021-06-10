@@ -114,7 +114,15 @@ namespace FairyGUI
         public void ApplyContentScaleFactor()
         {
             this.SetSize(Mathf.CeilToInt(Stage.inst.width / UIContentScaler.scaleFactor), Mathf.CeilToInt(Stage.inst.height / UIContentScaler.scaleFactor));
-            this.SetScale(UIContentScaler.scaleFactor, UIContentScaler.scaleFactor);
+            float yRatio = 1;
+#if UNITY_IOS
+            float safeY = Screen.safeArea.y * 0.9f;
+            float safeY2 = Screen.safeArea.y * 0.8f;
+            this.rootContainer.gameObject.transform.localPosition =
+               new Vector3(0, -safeY, 0);
+            yRatio = 1f - (safeY2 / Screen.height);
+#endif
+            this.SetScale(UIContentScaler.scaleFactor, UIContentScaler.scaleFactor * yRatio);
         }
 
         /// <summary>
